@@ -1,0 +1,270 @@
+/* Direction 확장 스타일 - 드롭다운 기반 플레이스홀더 관리 */
+
+/* 드롭다운과 추가 버튼 행 */
+.placeholder-selector-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* 변수명 드롭다운 */
+.placeholder-dropdown {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    background-color: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    font-family: 'Courier New', monospace;
+    font-size: calc(var(--mainFontSize) * 0.9);
+    transition: all 0.2s ease;
+}
+
+.placeholder-dropdown:focus {
+    outline: none;
+    border-color: var(--SmartThemeQuoteColor);
+    box-shadow: 0 0 0 2px rgba(var(--SmartThemeQuoteColorRGB), 0.3);
+}
+
+/* 플러스 버튼 */
+.add-placeholder-btn {
+    padding: 8px 12px;
+    background-color: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    color: var(--SmartThemeQuoteColor);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-placeholder-btn:hover {
+    background-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeBodyColor);
+    transform: scale(1.05);
+}
+
+/* 편집 영역 */
+.placeholder-editor-area {
+    overflow-y: auto;
+}
+
+/* 플레이스홀더 편집 폼 */
+.placeholder-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 제목과 삭제 버튼 행 */
+.placeholder-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.placeholder-title-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    background-color: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    font-family: inherit;
+    font-size: var(--mainFontSize);
+    transition: all 0.2s ease;
+}
+
+.placeholder-title-input:focus {
+    outline: none;
+    border-color: var(--SmartThemeQuoteColor);
+    box-shadow: 0 0 0 2px rgba(var(--SmartThemeQuoteColorRGB), 0.3);
+}
+
+/* 상단 삭제 버튼 */
+.delete-placeholder-btn {
+    padding: 8px 12px;
+    background-color: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-placeholder-btn:hover:not(:disabled) {
+    background-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeBodyColor);
+    transform: scale(1.05);
+}
+
+.delete-placeholder-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--SmartThemeBlurTintColor);
+    color: var(--grey30);
+}
+
+/* 내용 지우기 버튼 */
+.placeholder-clear-content-btn {
+    padding: 8px 12px;
+    background-color: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    color: var(--SmartThemeBodyColor);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.placeholder-clear-content-btn:hover {
+    background-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeBodyColor);
+    transform: scale(1.05);
+}
+
+/* 내용 텍스트 에리어 */
+.placeholder-content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.placeholder-textarea {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    background-color: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    font-family: inherit;
+    font-size: var(--mainFontSize);
+    resize: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+    min-height: 300px;
+}
+
+.placeholder-textarea:focus {
+    outline: none;
+    border-color: var(--SmartThemeQuoteColor);
+    box-shadow: 0 0 0 2px rgba(var(--SmartThemeQuoteColorRGB), 0.3);
+}
+
+.placeholder-textarea::placeholder {
+    color: var(--grey30);
+    opacity: 0.7;
+}
+
+/* 빈 상태 메시지 */
+.no-placeholders-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--SmartThemeQuoteColor);
+    opacity: 0.8;
+    text-align: center;
+}
+
+.no-placeholders-message h3 {
+    margin: 0 0 10px 0;
+    font-size: calc(var(--mainFontSize) * 1.2);
+    color: var(--SmartThemeBodyColor);
+}
+
+.no-placeholders-message p {
+    margin: 0;
+    font-size: var(--mainFontSize);
+}
+
+/* 요술봉메뉴 버튼 스타일 */
+#direction_button {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 5px;
+    padding: 8px 12px;
+}
+
+#direction_button:hover {
+    background-color: var(--SmartThemeQuoteColor);
+    filter: brightness(1.1);
+}
+
+.extensionsMenuExtensionButton {
+    margin-right: 10px;
+    width: 16px;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+#direction_button:hover .extensionsMenuExtensionButton {
+    transform: scale(1.1);
+}
+
+/* 스크롤바 스타일 */
+.placeholder-editor-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.placeholder-editor-area::-webkit-scrollbar-track {
+    background: var(--black30a);
+    border-radius: 4px;
+}
+
+.placeholder-editor-area::-webkit-scrollbar-thumb {
+    background: var(--SmartThemeBorderColor);
+    border-radius: 4px;
+}
+
+.placeholder-editor-area::-webkit-scrollbar-thumb:hover {
+    background: var(--SmartThemeQuoteColor);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 600px) {
+    .placeholder-selector-row {
+        gap: 8px;
+    }
+    
+    .placeholder-title-row {
+        flex-direction: row;
+        gap: 8px;
+    }
+    
+    .placeholder-title-input {
+        flex: 1;
+    }
+    
+    .placeholder-textarea {
+        min-height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .placeholder-selector-row {
+        gap: 6px;
+        margin-bottom: 15px;
+    }
+    
+    .placeholder-textarea {
+        min-height: 150px;
+    }
+} 
