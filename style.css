@@ -250,8 +250,49 @@
     filter: brightness(1.1);
 }
 
-/* 반응형 디자인 */
+/* 태블릿 반응형 디자인 */
+@media (max-width: 950px) {
+    .custom-modal-backdrop {
+        align-items: flex-start;
+        padding-top: 3vh;
+        padding-bottom: 3vh;
+    }
+    
+    .custom-modal {
+        width: 95vw;
+        height: 94vh;
+        max-width: none;
+        transform: scale(0.98);
+        position: relative;
+        margin: 0 auto;
+    }
+    
+    .custom-modal.visible {
+        transform: scale(1);
+    }
+    
+    .custom-modal-header {
+        padding: 8px 12px !important;
+    }
+    
+    .custom-modal-body {
+        padding: 12px;
+    }
+    
+    .alert-modal, .confirm-modal {
+        width: 95vw;
+        max-width: 400px;
+        height: auto;
+    }
+}
+
+/* 스마트폰 반응형 디자인 */
 @media (max-width: 480px) {
+    .custom-modal-backdrop {
+        padding-top: 2vh;
+        padding-bottom: 2vh;
+    }
+    
     .custom-modal {
         width: 98vw;
         height: 96vh;
@@ -275,6 +316,10 @@
         width: 32px;
         height: 32px;
         font-size: 20px;
+    }
+    
+    .custom-modal-body {
+        padding: 8px;
     }
 }
 
