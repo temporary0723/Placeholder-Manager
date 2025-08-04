@@ -1,5 +1,283 @@
 /* Direction 확장 스타일 - 드롭다운 기반 플레이스홀더 관리 */
 
+/* swipe-viewer 스타일 팝업 */
+.custom-modal-backdrop {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--black70a) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.custom-modal-backdrop.visible {
+    display: flex !important;
+    opacity: 1;
+}
+
+.custom-modal {
+    background: var(--SmartThemeBlurTintColor) !important;
+    color: var(--SmartThemeBodyColor) !important;
+    border: 1px solid var(--SmartThemeBorderColor) !important;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px var(--black70a);
+    width: 700px;
+    max-width: 95vw;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    z-index: 10001;
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-modal.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.custom-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px !important;
+    border-bottom: 1px solid var(--SmartThemeBorderColor) !important;
+    flex-shrink: 0;
+    background: var(--SmartThemeBlurTintColor) !important;
+    gap: 10px;
+}
+
+.custom-modal-header h3 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 16px;
+    flex-grow: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--SmartThemeBodyColor) !important;
+    user-select: none;
+}
+
+.custom-modal-close {
+    background: transparent !important;
+    border: none !important;
+    color: var(--SmartThemeBodyColor) !important;
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    padding: 8px;
+    line-height: 1;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.custom-modal-close:hover {
+    color: var(--SmartThemeQuoteColor) !important;
+    transform: rotate(90deg);
+}
+
+.custom-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* 알림 팝업 스타일 */
+.alert-modal {
+    width: 400px;
+    height: auto;
+    max-height: 300px;
+}
+
+.alert-modal .custom-modal-body {
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-modal .alert-message {
+    font-size: var(--mainFontSize);
+    line-height: 1.5;
+    color: var(--SmartThemeBodyColor);
+    margin: 0;
+}
+
+/* 확인 팝업 스타일 */
+.confirm-modal {
+    width: 400px;
+    height: auto;
+    max-height: 300px;
+}
+
+.confirm-modal .custom-modal-body {
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.confirm-modal .confirm-message {
+    font-size: var(--mainFontSize);
+    line-height: 1.5;
+    color: var(--SmartThemeBodyColor);
+    margin: 0;
+}
+
+.confirm-modal .confirm-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.confirm-modal .confirm-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: var(--mainFontSize);
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.confirm-modal .confirm-btn.primary {
+    background-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeBodyColor);
+}
+
+.confirm-modal .confirm-btn.secondary {
+    background-color: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+}
+
+.confirm-modal .confirm-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* 입력 팝업 스타일 */
+.input-modal .custom-modal-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-modal .input-label {
+    font-size: var(--mainFontSize);
+    color: var(--SmartThemeBodyColor);
+    margin: 0;
+}
+
+.input-modal .input-field {
+    padding: 8px 12px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    background-color: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    font-family: inherit;
+    font-size: var(--mainFontSize);
+    transition: all 0.2s ease;
+}
+
+.input-modal .input-field:focus {
+    outline: none;
+    border-color: var(--SmartThemeQuoteColor);
+    box-shadow: 0 0 0 2px rgba(var(--SmartThemeQuoteColorRGB), 0.3);
+}
+
+.input-modal .input-help {
+    font-size: calc(var(--mainFontSize) * 0.85);
+    color: var(--SmartThemeQuoteColor);
+    opacity: 0.8;
+    margin: 0;
+}
+
+.input-modal .input-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.input-modal .input-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: var(--mainFontSize);
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.input-modal .input-btn.primary {
+    background-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeBodyColor);
+}
+
+.input-modal .input-btn.secondary {
+    background-color: var(--SmartThemeBlurTintColor);
+    color: var(--SmartThemeBodyColor);
+}
+
+.input-modal .input-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+    .custom-modal {
+        width: 98vw;
+        height: 96vh;
+        border-radius: 8px;
+    }
+    
+    .alert-modal, .confirm-modal {
+        width: 95vw;
+        max-width: 400px;
+    }
+    
+    .custom-modal-header {
+        padding: 6px 10px !important;
+    }
+    
+    .custom-modal-header h3 {
+        font-size: 14px;
+    }
+    
+    .custom-modal-close {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+    }
+}
+
 /* 드롭다운과 추가 버튼 행 */
 .placeholder-selector-row {
     display: flex;

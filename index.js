@@ -4,7 +4,7 @@ import { saveSettingsDebounced } from "../../../../script.js";
 import { SlashCommand } from "../../../slash-commands/SlashCommand.js";
 import { SlashCommandParser } from "../../../slash-commands/SlashCommandParser.js";
 import { ARGUMENT_TYPE, SlashCommandNamedArgument } from "../../../slash-commands/SlashCommandArgument.js";
-import { POPUP_RESULT, POPUP_TYPE, Popup } from "../../../popup.js";
+
 
 // 확장 설정
 const extensionName = "Placeholder-Manager";
@@ -42,6 +42,9 @@ const RESERVED_WORDS = [
 // 현재 선택된 플레이스홀더 ID
 let selectedPlaceholderId = null;
 
+// 현재 열린 커스텀 모달
+let currentCustomModal = null;
+
 // 설정 로드
 async function loadSettings() {
     extension_settings[extensionName] = extension_settings[extensionName] || {};
@@ -55,55 +58,326 @@ function generateId() {
     return 'placeholder_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
+// 커스텀 모달 닫기
+function closeCustomModal() {
+    if (currentCustomModal) {
+        // 애니메이션과 함께 닫기
+        currentCustomModal.removeClass('visible');
+        currentCustomModal.find('.custom-modal').removeClass('visible');
+        
+        setTimeout(() => {
+            currentCustomModal.remove();
+            currentCustomModal = null;
+        }, 300);
+    }
+    
+    // 키보드 이벤트 핸들러 제거
+    $(document).off('keydown.customModal');
+}
+
+// 커스텀 알림 팝업
+function showCustomAlert(message, title = '알림') {
+    return new Promise((resolve) => {
+        // 기존 모달이 있으면 제거
+        if (currentCustomModal) {
+            closeCustomModal();
+        }
+        
+        const modalHtml = `
+            <div class="custom-modal-backdrop">
+                <div class="custom-modal alert-modal">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" title="닫기">×</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p class="alert-message">${message}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const modal = $(modalHtml);
+        $('body').append(modal);
+        
+        // 애니메이션을 위한 클래스 추가
+        setTimeout(() => {
+            modal.addClass('visible');
+            modal.find('.custom-modal').addClass('visible');
+        }, 10);
+        
+        currentCustomModal = modal;
+        
+        // 이벤트 핸들러 설정
+        modal.on('click', (e) => {
+            if (e.target === modal[0]) {
+                closeCustomModal();
+                resolve();
+            }
+        });
+        
+        modal.find('.custom-modal-close').on('click', () => {
+            closeCustomModal();
+            resolve();
+        });
+        
+        // ESC 키로 닫기
+        $(document).on('keydown.customModal', (e) => {
+            if (e.key === 'Escape') {
+                closeCustomModal();
+                resolve();
+            }
+        });
+    });
+}
+
+// 커스텀 확인 팝업 (필요시 사용)
+function showCustomConfirm(message, title = '확인') {
+    return new Promise((resolve) => {
+        // 기존 모달이 있으면 제거
+        if (currentCustomModal) {
+            closeCustomModal();
+        }
+        
+        const modalHtml = `
+            <div class="custom-modal-backdrop">
+                <div class="custom-modal confirm-modal">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" title="닫기">×</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p class="confirm-message">${message}</p>
+                        <div class="confirm-buttons">
+                            <button class="confirm-btn secondary" data-result="false">취소</button>
+                            <button class="confirm-btn primary" data-result="true">확인</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const modal = $(modalHtml);
+        $('body').append(modal);
+        
+        // 애니메이션을 위한 클래스 추가
+        setTimeout(() => {
+            modal.addClass('visible');
+            modal.find('.custom-modal').addClass('visible');
+        }, 10);
+        
+        currentCustomModal = modal;
+        
+        // 이벤트 핸들러 설정
+        modal.on('click', (e) => {
+            if (e.target === modal[0]) {
+                closeCustomModal();
+                resolve(false);
+            }
+        });
+        
+        modal.find('.custom-modal-close').on('click', () => {
+            closeCustomModal();
+            resolve(false);
+        });
+        
+        modal.find('.confirm-btn').on('click', (e) => {
+            const result = $(e.target).data('result') === 'true';
+            closeCustomModal();
+            resolve(result);
+        });
+        
+        // ESC 키로 닫기
+        $(document).on('keydown.customModal', (e) => {
+            if (e.key === 'Escape') {
+                closeCustomModal();
+                resolve(false);
+            }
+        });
+    });
+}
+
+// 커스텀 입력 팝업
+function showCustomInput(message, title = '입력', placeholder = '', maxlength = 50) {
+    return new Promise((resolve) => {
+        // 기존 모달이 있으면 제거
+        if (currentCustomModal) {
+            closeCustomModal();
+        }
+        
+        const modalHtml = `
+            <div class="custom-modal-backdrop">
+                <div class="custom-modal input-modal">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" title="닫기">×</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p class="input-label">${message}</p>
+                        <input type="text" class="input-field" placeholder="${placeholder}" maxlength="${maxlength}">
+                        <p class="input-help">영문, 숫자, 언더스코어(_)만 사용 가능하며 숫자로 시작할 수 없습니다.</p>
+                        <div class="input-buttons">
+                            <button class="input-btn secondary" data-result="cancel">취소</button>
+                            <button class="input-btn primary" data-result="ok">확인</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const modal = $(modalHtml);
+        $('body').append(modal);
+        
+        // 애니메이션을 위한 클래스 추가
+        setTimeout(() => {
+            modal.addClass('visible');
+            modal.find('.custom-modal').addClass('visible');
+            modal.find('.input-field').focus();
+        }, 10);
+        
+        currentCustomModal = modal;
+        
+        // 이벤트 핸들러 설정
+        modal.on('click', (e) => {
+            if (e.target === modal[0]) {
+                closeCustomModal();
+                resolve(null);
+            }
+        });
+        
+        modal.find('.custom-modal-close').on('click', () => {
+            closeCustomModal();
+            resolve(null);
+        });
+        
+        modal.find('.input-btn').on('click', (e) => {
+            const result = $(e.target).data('result');
+            if (result === 'ok') {
+                const value = modal.find('.input-field').val().trim();
+                closeCustomModal();
+                resolve(value);
+            } else {
+                closeCustomModal();
+                resolve(null);
+            }
+        });
+        
+        // Enter 키로 확인
+        modal.find('.input-field').on('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const value = $(e.target).val().trim();
+                closeCustomModal();
+                resolve(value);
+            }
+        });
+        
+        // ESC 키로 닫기
+        $(document).on('keydown.customModal', (e) => {
+            if (e.key === 'Escape') {
+                closeCustomModal();
+                resolve(null);
+            }
+        });
+    });
+}
+
+// 커스텀 메인 모달
+function showCustomModal(content, title, options = {}) {
+    return new Promise((resolve) => {
+        // 기존 모달이 있으면 제거
+        if (currentCustomModal) {
+            closeCustomModal();
+        }
+        
+        const modalHtml = `
+            <div class="custom-modal-backdrop">
+                <div class="custom-modal ${options.className || ''}">
+                    <div class="custom-modal-header">
+                        <h3>${title}</h3>
+                        <button class="custom-modal-close" title="닫기">×</button>
+                    </div>
+                    <div class="custom-modal-body">
+                        ${content}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const modal = $(modalHtml);
+        $('body').append(modal);
+        
+        // 애니메이션을 위한 클래스 추가
+        setTimeout(() => {
+            modal.addClass('visible');
+            modal.find('.custom-modal').addClass('visible');
+        }, 10);
+        
+        currentCustomModal = modal;
+        
+        // 이벤트 핸들러 설정
+        modal.on('click', (e) => {
+            if (e.target === modal[0]) {
+                closeCustomModal();
+                resolve(false);
+            }
+        });
+        
+        modal.find('.custom-modal-close').on('click', () => {
+            closeCustomModal();
+            resolve(false);
+        });
+        
+        // ESC 키로 닫기
+        $(document).on('keydown.customModal', (e) => {
+            if (e.key === 'Escape') {
+                closeCustomModal();
+                resolve(false);
+            }
+        });
+        
+        // 모달 객체 반환 (추가 이벤트 핸들러 등록용)
+        resolve(modal);
+    });
+}
+
 // 변수명 입력 팝업 표시
 async function showVariableNamePopup() {
     let success = false;
     
     while (!success) {
-        const variableNameHtml = `
-            <div class="flex-container flexFlowColumn">
-                <p>플레이스홀더 변수명을 입력하세요:</p>
-                <input type="text" id="variable-name-input" placeholder="예: character, setting, mood" maxlength="50" class="text_pole">
-                <small style="color: var(--SmartThemeQuoteColor); opacity: 0.8; margin-top: 5px;">영문, 숫자, 언더스코어(_)만 사용 가능하며 숫자로 시작할 수 없습니다.</small>
-            </div>
-        `;
+        const variableName = await showCustomInput(
+            '플레이스홀더 변수명을 입력하세요:',
+            '변수명 입력',
+            '예: character, setting, mood',
+            50
+        );
         
-        const template = $(variableNameHtml);
-        const popup = new Popup(template, POPUP_TYPE.CONFIRM, '변수명 입력', { 
-            okButton: '확인', 
-            cancelButton: '취소'
-        });
-        
-        const result = await popup.show();
-        
-        if (!result) {
-            // 취소 버튼을 눌렀거나 ESC로 닫았을 때
+        if (!variableName) {
+            // 취소하거나 ESC로 닫았을 때
             return false;
         }
         
-        const variableName = template.find('#variable-name-input').val().trim();
-        
         // 변수명 유효성 검사
         if (!variableName) {
-            alert('변수명을 입력해주세요.');
+            await showCustomAlert('변수명을 입력해주세요.');
             continue; // 다시 입력 받기
         }
         
         if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(variableName)) {
-            alert('변수명 형식이 올바르지 않습니다.\n영문, 숫자, 언더스코어(_)만 사용 가능하며\n숫자로 시작할 수 없습니다.');
+            await showCustomAlert('변수명 형식이 올바르지 않습니다.<br/>영문, 숫자, 언더스코어(_)만 사용 가능하며<br/>숫자로 시작할 수 없습니다.');
             continue; // 다시 입력 받기
         }
         
         // 시스템 예약어 검사
         if (RESERVED_WORDS.includes(variableName.toLowerCase())) {
-            alert(`'${variableName}'는 SillyTavern 시스템 예약어입니다.\n다른 이름을 사용해주세요.`);
+            await showCustomAlert(`'${variableName}'는 SillyTavern 시스템 예약어입니다.<br/>다른 이름을 사용해주세요.`);
             continue; // 다시 입력 받기
         }
         
         // 중복 검사
         const existingVariables = extension_settings[extensionName].placeholders.map(p => p.variable);
         if (existingVariables.includes(variableName)) {
-            alert('이미 존재하는 변수명입니다.\n다른 이름을 사용해주세요.');
+            await showCustomAlert('이미 존재하는 변수명입니다.<br/>다른 이름을 사용해주세요.');
             continue; // 다시 입력 받기
         }
         
@@ -147,18 +421,17 @@ async function openPlaceholderManagerPopup() {
     // 이벤트 리스너 추가
     setupEventListeners(template);
     
-    const popup = new Popup(template, POPUP_TYPE.CONFIRM, '플레이스홀더 관리', { 
-        wide: true, 
-        large: true,
-        okButton: '저장', 
-        cancelButton: '취소'
-    });
+    // 커스텀 모달로 표시
+    const modal = await showCustomModal(template.html(), '플레이스홀더 관리');
     
-    const result = await popup.show();
-    
-         if (result) {
-         // 플레이스홀더 설정 저장됨
-     }
+    // 모달이 표시된 후 이벤트 리스너를 다시 설정
+    if (modal && typeof modal.find === 'function') {
+        // 모달 내의 요소들에 대해 이벤트 리스너 재설정
+        const modalTemplate = modal.find('.custom-modal-body');
+        renderDropdown(modalTemplate);
+        renderEditor(modalTemplate);
+        setupEventListeners(modalTemplate);
+    }
 }
 
 // 드롭다운 옵션 렌더링
@@ -271,18 +544,20 @@ function setupEventListeners(template) {
     });
     
     // 상단 삭제 버튼 클릭 이벤트
-    template.find('#delete-placeholder-btn').off('click').on('click', function() {
+    template.find('#delete-placeholder-btn').off('click').on('click', async function() {
         if (selectedPlaceholderId) {
-            if (confirm('이 플레이스홀더를 삭제하시겠습니까?')) {
+            const confirmed = await showCustomConfirm('이 플레이스홀더를 삭제하시겠습니까?', '플레이스홀더 삭제');
+            if (confirmed) {
                 deletePlaceholder(template, selectedPlaceholderId);
             }
         }
     });
     
     // 내용 지우기 버튼 클릭 이벤트
-    template.find('.placeholder-clear-content-btn').off('click').on('click', function() {
+    template.find('.placeholder-clear-content-btn').off('click').on('click', async function() {
         const placeholderId = $(this).data('id');
-        if (confirm('이 플레이스홀더의 내용을 모두 지우시겠습니까?')) {
+        const confirmed = await showCustomConfirm('이 플레이스홀더의 내용을 모두 지우시겠습니까?', '내용 지우기');
+        if (confirmed) {
             clearPlaceholderContent(template, placeholderId);
         }
     });
