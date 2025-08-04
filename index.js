@@ -555,9 +555,9 @@ function setupEventListeners(template) {
     });
     
     // 상단 삭제 버튼 클릭 이벤트
-    template.find('#delete-placeholder-btn').off('click').on('click', async function() {
+    template.find('#delete-placeholder-btn').off('click').on('click', function() {
         if (selectedPlaceholderId) {
-            const confirmed = await showCustomConfirm('이 플레이스홀더를 삭제하시겠습니까?', '플레이스홀더 삭제');
+            const confirmed = confirm('이 플레이스홀더를 삭제하시겠습니까?');
             if (confirmed) {
                 deletePlaceholder(template, selectedPlaceholderId);
             }
@@ -565,9 +565,9 @@ function setupEventListeners(template) {
     });
     
     // 내용 지우기 버튼 클릭 이벤트
-    template.find('.placeholder-clear-content-btn').off('click').on('click', async function() {
+    template.find('.placeholder-clear-content-btn').off('click').on('click', function() {
         const placeholderId = $(this).data('id');
-        const confirmed = await showCustomConfirm('이 플레이스홀더의 내용을 모두 지우시겠습니까?', '내용 지우기');
+        const confirmed = confirm('이 플레이스홀더의 내용을 모두 지우시겠습니까?');
         if (confirmed) {
             clearPlaceholderContent(template, placeholderId);
         }
@@ -935,9 +935,9 @@ function setupCompactUIEventListeners() {
     });
     
     // 지우개 버튼
-    compactUIPopup.find('.ph-compact--clear').on('click', async function() {
+    compactUIPopup.find('.ph-compact--clear').on('click', function() {
         const placeholderId = $(this).data('id');
-        const confirmed = await showCustomConfirm('이 매크로의 내용을 모두 지우시겠습니까?', '내용 지우기');
+        const confirmed = confirm('이 매크로의 내용을 모두 지우시겠습니까?');
         if (confirmed) {
             clearCompactPlaceholderContent(placeholderId);
         }

@@ -731,6 +731,12 @@
     border-color: var(--SmartThemeQuoteColor);
 }
 
+/* 지우개 버튼 명시적 표시 */
+.ph-compact--clear {
+    opacity: 1 !important;
+    display: flex !important;
+}
+
 .ph-compact--title {
     flex: 1;
     text-align: center;
