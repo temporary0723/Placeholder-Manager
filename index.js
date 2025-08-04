@@ -893,6 +893,9 @@ function showCompactUIPopup() {
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 <div class="ph-compact--title">{{${currentPlaceholder.variable}}}</div>
+                <button class="ph-compact--nav ph-compact--clear" title="내용 지우기" data-id="${currentPlaceholder.id}">
+                    <i class="fa-solid fa-eraser"></i>
+                </button>
                 <button class="ph-compact--nav ph-compact--next" title="다음 매크로">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
@@ -931,6 +934,15 @@ function setupCompactUIEventListeners() {
         navigateCompactMacro(1);
     });
     
+    // 지우개 버튼
+    compactUIPopup.find('.ph-compact--clear').on('click', async function() {
+        const placeholderId = $(this).data('id');
+        const confirmed = await showCustomConfirm('이 매크로의 내용을 모두 지우시겠습니까?', '내용 지우기');
+        if (confirmed) {
+            clearCompactPlaceholderContent(placeholderId);
+        }
+    });
+    
     // 텍스트에어리어 변경 이벤트
     compactUIPopup.find('.ph-compact--textarea').on('input', function() {
         const placeholderId = $(this).data('id');
@@ -945,6 +957,24 @@ function setupCompactUIEventListeners() {
             $(document).off('click.compactUI');
         }
     });
+}
+
+// 컴팩트 UI 플레이스홀더 내용 지우기
+function clearCompactPlaceholderContent(placeholderId) {
+    const placeholders = extension_settings[extensionName].placeholders;
+    const placeholder = placeholders.find(p => p.id === placeholderId);
+    
+    if (placeholder) {
+        placeholder.content = "";
+        applyPlaceholderToSystem(placeholder);
+        
+        // 컴팩트 UI 업데이트
+        if (compactUIPopup) {
+            compactUIPopup.find('.ph-compact--textarea').val('');
+        }
+        
+        saveSettingsDebounced();
+    }
 }
 
 // 컴팩트 UI 매크로 네비게이션
@@ -966,6 +996,7 @@ function navigateCompactMacro(direction) {
     compactUIPopup.find('.ph-compact--textarea')
         .attr('data-id', currentPlaceholder.id)
         .val(currentPlaceholder.content || '');
+    compactUIPopup.find('.ph-compact--clear').attr('data-id', currentPlaceholder.id);
 }
 
 // 컴팩트 UI 버튼 추가/제거
