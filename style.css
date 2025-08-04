@@ -590,4 +590,238 @@
     .placeholder-textarea {
         min-height: 150px;
     }
+}
+
+/* 컴팩트 UI 토글 스타일 */
+.compact-ui-toggle-row {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+}
+
+.compact-ui-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: var(--mainFontSize);
+    color: var(--SmartThemeBodyColor);
+    user-select: none;
+}
+
+.compact-ui-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--SmartThemeBorderColor);
+    border-radius: 3px;
+    background-color: var(--black30a);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.compact-ui-checkbox:checked {
+    background-color: var(--SmartThemeQuoteColor);
+    border-color: var(--SmartThemeQuoteColor);
+}
+
+.compact-ui-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--SmartThemeBodyColor);
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.compact-ui-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--SmartThemeQuoteColorRGB), 0.3);
+}
+
+.compact-ui-toggle-text {
+    flex: 1;
+}
+
+/* 컴팩트 UI 버튼 스타일 */
+.ph-compact--button {
+    order: 3;
+    display: flex;
+    align-items: center;
+    height: auto;
+    margin: 0;
+    margin-left: -5px;
+    font-size: 0.5em;
+    background-color: transparent;
+    opacity: 0.5;
+    transition: 200ms;
+    cursor: pointer;
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.ph-compact--button:hover {
+    opacity: 1;
+    background-color: var(--white30a);
+}
+
+.ph-compact--button.ph-compact--hasPopup {
+    opacity: 1;
+    background-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeBodyColor);
+}
+
+/* 컴팩트 UI 팝업 스타일 */
+.ph-compact--popup {
+    filter: drop-shadow(1px 1px 2px var(--black50a));
+    z-index: 30000;
+    overflow: hidden;
+    border-radius: 10px;
+    background-color: var(--secondaryBg, var(--SmartThemeBlurTintColor));
+    border: 1px solid var(--SmartThemeBorderColor);
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    width: 400px;
+    max-width: 90vw;
+    transition: 200ms;
+    transform-origin: calc(100% - 0.5em) calc(100% + 0.5em);
+    scale: 1 0;
+    opacity: 0;
+}
+
+.ph-compact--popup.ph-compact--active {
+    scale: 1;
+    opacity: 1;
+}
+
+.ph-compact--header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    background-color: var(--SmartThemeBlurTintColor);
+    gap: 8px;
+}
+
+.ph-compact--nav {
+    background: transparent;
+    border: 1px solid var(--SmartThemeBorderColor);
+    color: var(--SmartThemeBodyColor);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.ph-compact--nav:hover {
+    background-color: var(--SmartThemeQuoteColor);
+    color: var(--SmartThemeBodyColor);
+    border-color: var(--SmartThemeQuoteColor);
+}
+
+.ph-compact--title {
+    flex: 1;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--SmartThemeQuoteColor);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ph-compact--content {
+    padding: 8px;
+}
+
+.ph-compact--textarea {
+    width: 100%;
+    min-height: 120px;
+    max-height: 200px;
+    padding: 8px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    background-color: var(--black30a);
+    color: var(--SmartThemeBodyColor);
+    font-family: inherit;
+    font-size: var(--mainFontSize);
+    resize: vertical;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+}
+
+.ph-compact--textarea:focus {
+    outline: none;
+    border-color: var(--SmartThemeQuoteColor);
+    box-shadow: 0 0 0 2px rgba(var(--SmartThemeQuoteColorRGB), 0.3);
+}
+
+.ph-compact--textarea::placeholder {
+    color: var(--grey30);
+    opacity: 0.7;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 600px) {
+    .ph-compact--popup {
+        width: 320px;
+    }
+    
+    .ph-compact--textarea {
+        min-height: 100px;
+        font-size: calc(var(--mainFontSize) * 0.9);
+    }
+    
+    .compact-ui-toggle-row {
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+    
+    .compact-ui-toggle-label {
+        gap: 8px;
+        font-size: calc(var(--mainFontSize) * 0.9);
+    }
+}
+
+@media (max-width: 480px) {
+    .ph-compact--popup {
+        width: 280px;
+    }
+    
+    .ph-compact--header {
+        padding: 6px 8px;
+    }
+    
+    .ph-compact--nav {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+    
+    .ph-compact--title {
+        font-size: 12px;
+    }
+    
+    .ph-compact--content {
+        padding: 6px;
+    }
+    
+    .ph-compact--textarea {
+        min-height: 80px;
+        font-size: calc(var(--mainFontSize) * 0.85);
+    }
 } 

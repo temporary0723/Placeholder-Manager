@@ -11,7 +11,8 @@ const extensionName = "Placeholder-Manager";
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 const extensionSettings = extension_settings[extensionName];
 const defaultSettings = {
-    placeholders: []
+    placeholders: [],
+    compactUI: false  // 컴팩트 UI 활성화 여부
 };
 
 // SillyTavern 시스템 예약어 목록
@@ -44,6 +45,11 @@ let selectedPlaceholderId = null;
 
 // 현재 열린 커스텀 모달
 let currentCustomModal = null;
+
+// 컴팩트 UI 관련 변수들
+let compactUIButton = null;
+let compactUIPopup = null;
+let currentMacroIndex = 0;
 
 // 설정 로드
 async function loadSettings() {
@@ -399,6 +405,11 @@ async function showVariableNamePopup() {
         
         // 새로 생성된 플레이스홀더를 선택
         selectedPlaceholderId = newPlaceholder.id;
+        
+        // 컴팩트 UI 버튼 업데이트 (첫 번째 플레이스홀더가 생성된 경우)
+        if (extension_settings[extensionName].placeholders.length === 1) {
+            updateCompactUIButton();
+        }
     }
     
     return true;
@@ -561,6 +572,16 @@ function setupEventListeners(template) {
             clearPlaceholderContent(template, placeholderId);
         }
     });
+    
+    // 컴팩트 UI 토글 이벤트
+    template.find('#compact-ui-toggle').off('change').on('change', function() {
+        extension_settings[extensionName].compactUI = $(this).is(':checked');
+        saveSettingsDebounced();
+        updateCompactUIButton();
+    });
+    
+    // 토글 상태 설정
+    template.find('#compact-ui-toggle').prop('checked', extension_settings[extensionName].compactUI || false);
 }
 
 // 플레이스홀더 제목 업데이트
@@ -607,6 +628,12 @@ function deletePlaceholder(template, placeholderId) {
         renderDropdown(template);
         renderEditor(template);
         setupEventListeners(template);
+        
+        // 컴팩트 UI 버튼 업데이트 (마지막 플레이스홀더가 삭제된 경우)
+        if (extension_settings[extensionName].placeholders.length === 0) {
+            closeCompactUIPopup();
+            updateCompactUIButton();
+        }
         
         saveSettingsDebounced();
     }
@@ -824,6 +851,153 @@ function registerSlashCommands() {
      }
 }
 
+// 컴팩트 UI 팝업 닫기
+function closeCompactUIPopup() {
+    if (compactUIPopup) {
+        compactUIPopup.removeClass('ph-compact--active');
+        setTimeout(() => {
+            compactUIPopup.remove();
+            compactUIPopup = null;
+        }, 200);
+    }
+    
+    if (compactUIButton) {
+        compactUIButton.removeClass('ph-compact--hasPopup');
+    }
+}
+
+// 컴팩트 UI 팝업 표시
+function showCompactUIPopup() {
+    if (compactUIPopup) {
+        return closeCompactUIPopup();
+    }
+    
+    const placeholders = extension_settings[extensionName].placeholders || [];
+    if (placeholders.length === 0) {
+        return;
+    }
+    
+    // 현재 인덱스가 범위를 벗어나면 조정
+    if (currentMacroIndex >= placeholders.length) {
+        currentMacroIndex = 0;
+    }
+    
+    const currentPlaceholder = placeholders[currentMacroIndex];
+    
+    compactUIButton.addClass('ph-compact--hasPopup');
+    
+    const popupHtml = `
+        <div class="ph-compact--popup">
+            <div class="ph-compact--header">
+                <button class="ph-compact--nav ph-compact--prev" title="이전 매크로">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div class="ph-compact--title">{{${currentPlaceholder.variable}}}</div>
+                <button class="ph-compact--nav ph-compact--next" title="다음 매크로">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="ph-compact--content">
+                <textarea class="ph-compact--textarea" 
+                          placeholder="매크로 내용을 입력하세요..." 
+                          data-id="${currentPlaceholder.id}">${currentPlaceholder.content || ''}</textarea>
+            </div>
+        </div>
+    `;
+    
+    compactUIPopup = $(popupHtml);
+    $('#nonQRFormItems').append(compactUIPopup);
+    
+    // 애니메이션
+    setTimeout(() => {
+        compactUIPopup.addClass('ph-compact--active');
+    }, 10);
+    
+    // 이벤트 핸들러 설정
+    setupCompactUIEventListeners();
+}
+
+// 컴팩트 UI 이벤트 리스너 설정
+function setupCompactUIEventListeners() {
+    if (!compactUIPopup) return;
+    
+    // 이전 매크로 버튼
+    compactUIPopup.find('.ph-compact--prev').on('click', () => {
+        navigateCompactMacro(-1);
+    });
+    
+    // 다음 매크로 버튼
+    compactUIPopup.find('.ph-compact--next').on('click', () => {
+        navigateCompactMacro(1);
+    });
+    
+    // 텍스트에어리어 변경 이벤트
+    compactUIPopup.find('.ph-compact--textarea').on('input', function() {
+        const placeholderId = $(this).data('id');
+        const newContent = $(this).val();
+        updatePlaceholderContent(placeholderId, newContent);
+    });
+    
+    // 외부 클릭시 닫기
+    $(document).on('click.compactUI', (e) => {
+        if (!$(e.target).closest('.ph-compact--popup, .ph-compact--button').length) {
+            closeCompactUIPopup();
+            $(document).off('click.compactUI');
+        }
+    });
+}
+
+// 컴팩트 UI 매크로 네비게이션
+function navigateCompactMacro(direction) {
+    const placeholders = extension_settings[extensionName].placeholders || [];
+    if (placeholders.length === 0) return;
+    
+    currentMacroIndex += direction;
+    
+    if (currentMacroIndex < 0) {
+        currentMacroIndex = placeholders.length - 1;
+    } else if (currentMacroIndex >= placeholders.length) {
+        currentMacroIndex = 0;
+    }
+    
+    // 팝업 업데이트
+    const currentPlaceholder = placeholders[currentMacroIndex];
+    compactUIPopup.find('.ph-compact--title').text(`{{${currentPlaceholder.variable}}}`);
+    compactUIPopup.find('.ph-compact--textarea')
+        .attr('data-id', currentPlaceholder.id)
+        .val(currentPlaceholder.content || '');
+}
+
+// 컴팩트 UI 버튼 추가/제거
+function updateCompactUIButton() {
+    const ta = document.querySelector('#send_textarea');
+    if (!ta) {
+        setTimeout(updateCompactUIButton, 1000);
+        return;
+    }
+    
+    // 기존 버튼 제거
+    if (compactUIButton) {
+        compactUIButton.remove();
+        compactUIButton = null;
+    }
+    
+    // 컴팩트 UI가 활성화된 경우만 버튼 추가
+    if (extension_settings[extensionName].compactUI) {
+        const buttonHtml = `
+            <div class="ph-compact--button menu_button" title="플레이스홀더 빠른 편집">
+                <i class="fa-solid fa-compass"></i>
+            </div>
+        `;
+        
+        compactUIButton = $(buttonHtml);
+        $(ta).after(compactUIButton);
+        
+        // 클릭 이벤트
+        compactUIButton.on('click', showCompactUIPopup);
+    }
+}
+
 // 요술봉메뉴에 버튼 추가
 async function addToWandMenu() {
     try {
@@ -846,6 +1020,9 @@ jQuery(async () => {
     await loadSettings();
     await addToWandMenu();
     updateAllPlaceholders();
+    
+    // 컴팩트 UI 버튼 초기화
+    updateCompactUIButton();
     
          // SillyTavern 로드 완료 후 슬래시 커맨드 등록
      setTimeout(registerSlashCommands, 2000);
