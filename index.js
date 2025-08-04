@@ -1017,7 +1017,7 @@ function updateCompactUIButton() {
     if (extension_settings[extensionName].compactUI) {
         const buttonHtml = `
             <div class="ph-compact--button menu_button" title="플레이스홀더 빠른 편집">
-                <i class="fa-solid fa-compass"></i>
+                <i class="fa-solid fa-fish"></i>
             </div>
         `;
         
