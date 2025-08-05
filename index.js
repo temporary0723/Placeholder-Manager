@@ -346,44 +346,44 @@ function showCustomModal(content, title, options = {}) {
     });
 }
 
-// 변수명 입력 팝업 표시
-async function showVariableNamePopup() {
+// 변수명 입력 팝업 표시 (기본 브라우저 대화상자 사용)
+function showVariableNamePopup() {
     let success = false;
     
     while (!success) {
-        const variableName = await showCustomInput(
-            '플레이스홀더 변수명을 입력하세요:',
-            '변수명 입력',
-            '예: character, setting, mood',
-            50
+        const variableName = prompt(
+            '플레이스홀더 변수명을 입력하세요:\n(영문, 숫자, 언더스코어(_)만 사용 가능하며 숫자로 시작할 수 없습니다)',
+            ''
         );
         
-        if (!variableName) {
-            // 취소하거나 ESC로 닫았을 때
+        if (variableName === null) {
+            // 취소 버튼을 클릭했을 때
             return false;
         }
         
         // 변수명 유효성 검사
-        if (!variableName) {
-            await showCustomAlert('변수명을 입력해주세요.');
+        if (!variableName || !variableName.trim()) {
+            alert('변수명을 입력해주세요.');
             continue; // 다시 입력 받기
         }
         
-        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(variableName)) {
-            await showCustomAlert('변수명 형식이 올바르지 않습니다.<br/>영문, 숫자, 언더스코어(_)만 사용 가능하며<br/>숫자로 시작할 수 없습니다.');
+        const trimmedName = variableName.trim();
+        
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(trimmedName)) {
+            alert('변수명 형식이 올바르지 않습니다.\n영문, 숫자, 언더스코어(_)만 사용 가능하며\n숫자로 시작할 수 없습니다.');
             continue; // 다시 입력 받기
         }
         
         // 시스템 예약어 검사
-        if (RESERVED_WORDS.includes(variableName.toLowerCase())) {
-            await showCustomAlert(`'${variableName}'는 SillyTavern 시스템 예약어입니다.<br/>다른 이름을 사용해주세요.`);
+        if (RESERVED_WORDS.includes(trimmedName.toLowerCase())) {
+            alert(`'${trimmedName}'는 SillyTavern 시스템 예약어입니다.\n다른 이름을 사용해주세요.`);
             continue; // 다시 입력 받기
         }
         
         // 중복 검사
         const existingVariables = extension_settings[extensionName].placeholders.map(p => p.variable);
-        if (existingVariables.includes(variableName)) {
-            await showCustomAlert('이미 존재하는 변수명입니다.<br/>다른 이름을 사용해주세요.');
+        if (existingVariables.includes(trimmedName)) {
+            alert('이미 존재하는 변수명입니다.\n다른 이름을 사용해주세요.');
             continue; // 다시 입력 받기
         }
         
@@ -391,7 +391,7 @@ async function showVariableNamePopup() {
         const newPlaceholder = { 
             id: generateId(), 
             name: "새 플레이스홀더", 
-            variable: variableName, 
+            variable: trimmedName, 
             content: "" 
         };
         
@@ -528,8 +528,8 @@ function setupEventListeners(template) {
     });
     
     // + 버튼 클릭 이벤트
-    template.find('#add-placeholder-btn').off('click').on('click', async function() {
-        const success = await showVariableNamePopup();
+    template.find('#add-placeholder-btn').off('click').on('click', function() {
+        const success = showVariableNamePopup();
         if (success) {
             renderDropdown(template);
             renderEditor(template);
